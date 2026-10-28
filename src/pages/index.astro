@@ -1,0 +1,315 @@
+---
+import { Image } from 'astro:assets';
+import '../styles/global.css';
+import logo from '../assets/logo.png';
+import { FACTS, SERVICES, PROVIDE, AREAS, AREA_OPTIONS, CHIPS, HOURS } from '../data/content';
+import { SITE, FORM_ENDPOINT } from '../data/site';
+
+// Open Graph image: a full URL once `site` is set in astro.config.mjs, otherwise a relative path.
+const ogImage = Astro.site ? new URL('/og-image.png', Astro.site).href : '/og-image.png';
+const pageUrl = Astro.site ? new URL('/', Astro.site).href : undefined;
+
+// Structured data for Google (LocalBusiness). Only facts from the handoff are used.
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: SITE.name,
+  legalName: SITE.legalName,
+  description: SITE.description,
+  telephone: SITE.phoneIntl,
+  foundingDate: '2017',
+  address: { '@type': 'PostalAddress', addressLocality: 'Quadra Island', addressRegion: 'BC', addressCountry: 'CA' },
+  areaServed: AREAS.map((a) => a.t),
+  openingHours: 'Mo-Fr 09:00-17:00',
+  ...(pageUrl ? { url: pageUrl, image: ogImage } : {}),
+};
+
+// Rain streaks for the hero (same pattern as the prototype).
+const drops = Array.from({ length: 34 }, (_, i) => ({
+  l: (i * 37 % 100) + (i % 3) * 0.7,
+  d: 1.6 + (i * 13 % 10) / 6,
+  dl: -((i * 7) % 20) / 6,
+  h: 50 + (i * 11 % 50),
+  o: 0.12 + (i % 5) * 0.05,
+}));
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{SITE.title}</title>
+    <meta name="description" content={SITE.description} />
+    {pageUrl && <link rel="canonical" href={pageUrl} />}
+    <meta name="theme-color" content="#22272C" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={SITE.title} />
+    <meta property="og:description" content={SITE.description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    {pageUrl && <meta property="og:url" content={pageUrl} />}
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Semi+Condensed:wght@700;800&display=swap" rel="stylesheet" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <div id="top" class="page">
+      <header class="site-header">
+        <div class="container site-header__inner">
+          <a href="#top" class="site-header__logo">
+            <Image src={logo} alt="Above All Gutters" height={62} densities={[1, 2]} loading="eager" />
+          </a>
+          <nav class="site-nav" aria-label="Main">
+            <a href="#services">Installation</a>
+            <a href="#services">Protection</a>
+            <a href="#services">Maintenance</a>
+            <a href="#areas">Areas</a>
+          </nav>
+          <a href={SITE.phoneHref} class="header-call">{SITE.phone}</a>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="hero__rain" aria-hidden="true">
+            {drops.map((r) => (
+              <span class="hero__drop" style={`left:${r.l}%;height:${r.h}px;--o:${r.o};--d:${r.d}s;--dl:${r.dl}s`}></span>
+            ))}
+          </div>
+          <div class="container hero__inner">
+            <p data-hero style="--i:0" class="hero__kicker">From first call to full install, we maintain and clean them all.</p>
+            <h1 data-hero style="--i:1" class="head hero__title">Seamless gutters, built for island weather.</h1>
+            <div class="hero__row">
+              <p data-hero style="--i:2" class="hero__lede">Continuous gutter installation, protection and maintenance on Quadra Island, in Campbell River and around the Discovery Islands. Canadian-made materials, fair prices and prompt service since 2017.</p>
+              <div data-hero style="--i:3" class="hero__ctas">
+                <a href="#quote" class="btn btn--blue">Get a free estimate</a>
+                <a href={SITE.phoneHref} class="btn btn--outline">Call {SITE.phone}</a>
+              </div>
+            </div>
+          </div>
+          <div class="hero__bar" aria-hidden="true"><span></span></div>
+        </section>
+
+        <section class="facts" aria-label="Quick facts">
+          <div class="container facts__grid">
+            {FACTS.map((f) => (
+              <div class="fact">
+                <span class="fact__t">{f.t}</span>
+                <span class="fact__d">{f.d}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="services" class="container services">
+          <h2 data-reveal class="head h2-xl services__title">What we do</h2>
+          <div class="services__list">
+            {SERVICES.map((s) => (
+              <article data-reveal class={`service service--${s.style}`}>
+                <div class="service__head">
+                  <span class="service__kicker">{s.k}</span>
+                  <h3 class="head service__title">{s.t}</h3>
+                </div>
+                <div class="service__body">
+                  <p class="service__text">{s.d}</p>
+                  <div class="tags">
+                    {s.tags.map((g) => <span class="tag">{g}</span>)}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section class="diy">
+          <div class="container diy__inner">
+            <div data-reveal class="diy__text">
+              <h2 class="head diy__title">DIY kits now available.</h2>
+              <p class="diy__sub">Delivered on Vancouver Island. Call for a quote.</p>
+            </div>
+            <a data-reveal href={SITE.phoneHref} class="btn btn--dark">{SITE.phone}</a>
+          </div>
+        </section>
+
+        <section class="container weather">
+          <h2 data-reveal class="head weather__title">Leaves, needles, rain and snow. Our gutters are made for all of it.</h2>
+          <div class="weather__body">
+            <p data-reveal class="weather__text">We’ve been installing gutters for homeowners and contractors across the Discovery Islands and Vancouver Island since 2017, on new builds and as replacements for old, aging gutters.</p>
+            <ul class="provide">
+              {PROVIDE.map((p) => <li data-reveal>{p}</li>)}
+            </ul>
+          </div>
+        </section>
+
+        <section id="areas" class="areas">
+          <div class="container areas__inner">
+            <div data-reveal class="areas__top">
+              <h2 class="head h2-xl">Based on Quadra Island.</h2>
+              <p class="areas__sub">Serving the Discovery Islands, Campbell River and central Vancouver Island.</p>
+            </div>
+            <div class="areas__grid">
+              {AREAS.map((a) => (
+                <div data-reveal class="area">
+                  <span class="area__t">{a.t}</span>
+                  <span class="area__d">{a.d}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="quote" class="container quote">
+          <div class="quote__info">
+            <h2 data-reveal class="head h2-xl">Get a free estimate.</h2>
+            <p data-reveal class="quote__text">Questions about a new install, gutter guards or a cleaning? Use the form or give us a call.</p>
+            <a data-reveal href={SITE.phoneHref} class="quote__phone">{SITE.phone}</a>
+            <div data-reveal class="hours">
+              <strong>Hours</strong>
+              <span>{HOURS}</span>
+            </div>
+          </div>
+
+          <div>
+            <form
+              id="estimate-form"
+              data-reveal
+              class="form"
+              method="POST"
+              action={FORM_ENDPOINT || undefined}
+              data-endpoint={FORM_ENDPOINT}
+            >
+              <div class="form__grid">
+                <label class="field">Name<input name="name" autocomplete="name" required /></label>
+                <label class="field">Phone<input name="phone" type="tel" autocomplete="tel" required /></label>
+                <label class="field">Email<input name="email" type="email" autocomplete="email" /></label>
+                <label class="field">Area
+                  <select name="area">
+                    {AREA_OPTIONS.map((o) => <option>{o}</option>)}
+                  </select>
+                </label>
+              </div>
+              <fieldset class="chips">
+                <legend>I need</legend>
+                <div class="chips__list">
+                  {CHIPS.map((c) => (
+                    <button type="button" class="chip" aria-pressed="false" data-chip={c}>{c}</button>
+                  ))}
+                </div>
+                <input type="hidden" name="services" value="" />
+              </fieldset>
+              <label class="field">Message<textarea name="message" rows="4"></textarea></label>
+              <p class="form__error" role="alert" hidden>Sorry, that didn’t send. Please call {SITE.phone}.</p>
+              <button type="submit" class="form__submit">Send message</button>
+            </form>
+            <div class="thanks" id="form-thanks" role="status" hidden>Thanks. We’ll be in touch with your estimate.</div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <div class="container site-footer__inner">
+          <span class="site-footer__logo">
+            <Image src={logo} alt="Above All Gutters" height={44} densities={[1, 2]} />
+          </span>
+          <span>{SITE.legalName} · {SITE.location} · <a href={SITE.phoneHref}>{SITE.phone}</a></span>
+          <div class="site-footer__legal">
+            <span>© 2026 {SITE.legalName}</span>
+            <a class="powered" href="https://backpackdigitalmedia.com" target="_blank" rel="noopener">Powered by Backpack Digital Media</a>
+          </div>
+        </div>
+      </footer>
+
+      <div class="mobile-bar">
+        <a href={SITE.phoneHref} class="mobile-bar__call">Call</a>
+        <a href="#quote" class="mobile-bar__quote">Free estimate</a>
+      </div>
+    </div>
+
+    <script>
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // ----- Scroll reveal: fade [data-reveal] elements up as they enter the screen -----
+      if (!reduce && 'IntersectionObserver' in window) {
+        const els = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
+        // Anything already on screen at load stays visible (no animation).
+        els.forEach((el) => {
+          if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('is-shown');
+        });
+        document.documentElement.classList.add('reveal-on');
+        const io = new IntersectionObserver(
+          (entries) => {
+            const entering = entries.filter((e) => e.isIntersecting);
+            entering.forEach((entry, i) => {
+              const el = entry.target as HTMLElement;
+              el.style.setProperty('--delay', `${i * 0.08}s`); // stagger siblings ~80ms
+              el.classList.add('is-shown');
+              io.unobserve(el);
+            });
+          },
+          { rootMargin: '0px 0px -8% 0px' }
+        );
+        els.filter((el) => !el.classList.contains('is-shown')).forEach((el) => io.observe(el));
+      }
+
+      // ----- Estimate form: chip toggles + submit -----
+      const form = document.getElementById('estimate-form') as HTMLFormElement | null;
+      const thanks = document.getElementById('form-thanks');
+      if (form && thanks) {
+        const hidden = form.querySelector<HTMLInputElement>('input[name="services"]')!;
+        const errorMsg = form.querySelector<HTMLElement>('.form__error')!;
+        const submitBtn = form.querySelector<HTMLButtonElement>('.form__submit')!;
+        const chips = Array.from(form.querySelectorAll<HTMLButtonElement>('.chip'));
+
+        chips.forEach((chip) => {
+          chip.addEventListener('click', () => {
+            const on = chip.getAttribute('aria-pressed') === 'true';
+            chip.setAttribute('aria-pressed', String(!on));
+            hidden.value = chips
+              .filter((c) => c.getAttribute('aria-pressed') === 'true')
+              .map((c) => c.dataset.chip)
+              .join(', ');
+          });
+        });
+
+        const showThanks = () => {
+          form.hidden = true;
+          thanks.hidden = false;
+        };
+
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          errorMsg.hidden = true;
+          const endpoint = form.dataset.endpoint;
+          if (!endpoint) {
+            // Demo mode: no FORM_ENDPOINT set yet in src/data/site.ts.
+            showThanks();
+            return;
+          }
+          submitBtn.disabled = true;
+          try {
+            const res = await fetch(endpoint, {
+              method: 'POST',
+              body: new FormData(form),
+              headers: { Accept: 'application/json' },
+            });
+            if (!res.ok) throw new Error(String(res.status));
+            showThanks();
+          } catch {
+            errorMsg.hidden = false;
+          } finally {
+            submitBtn.disabled = false;
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
